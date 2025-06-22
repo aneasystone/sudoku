@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { use } from 'react';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import zh from '@/i18n/locales/zh';
@@ -25,6 +25,34 @@ export default function Home({
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const t = translations[lang as keyof typeof translations];
+
+  // 页面加载时自动生成一道数独题
+  useEffect(() => {
+    const generateInitialPuzzle = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ difficulty }),
+        });
+
+        const data = await response.json();
+        if (data.grid) {
+          setGrid(data.grid);
+          setSolved(false);
+        }
+      } catch (error) {
+        console.error('Error generating initial sudoku:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    generateInitialPuzzle();
+  }, [difficulty]);
 
   const handleCellChange = (row: number, col: number, value: string) => {
     const newValue = value === '' ? 0 : parseInt(value);
