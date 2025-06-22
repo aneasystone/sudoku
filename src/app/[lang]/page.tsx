@@ -22,6 +22,7 @@ export default function Home({
   );
   const [solved, setSolved] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const t = translations[lang as keyof typeof translations];
 
@@ -83,6 +84,29 @@ export default function Home({
     }
   };
 
+  const handleGenerateRandom = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ difficulty }),
+      });
+
+      const data = await response.json();
+      if (data.grid) {
+        setGrid(data.grid);
+        setSolved(false);
+      }
+    } catch (error) {
+      console.error('Error generating sudoku:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-12 px-4">
       <LanguageSwitcher />
@@ -91,30 +115,57 @@ export default function Home({
           {t.title}
         </h1>
         
-        <div className="flex justify-center gap-4 mb-8">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-            ref={fileInputRef}
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-lg
-                     transition duration-200 ease-in-out transform hover:scale-105"
-          >
-            {t.uploadButton}
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={isLoading}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg
-                     transition duration-200 ease-in-out transform hover:scale-105
-                     disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? t.processing : t.solveButton}
-          </button>
+        <div className="flex flex-col items-center gap-4 mb-8">
+          <div className="flex items-center gap-4">
+            <label htmlFor="difficulty" className="text-sm font-medium text-gray-700">
+              {t.difficulty}
+            </label>
+            <select
+              id="difficulty"
+              value={difficulty}
+              onChange={(e) => setDifficulty(e.target.value as 'easy' | 'medium' | 'hard')}
+              className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="easy">{t.difficulties.easy}</option>
+              <option value="medium">{t.difficulties.medium}</option>
+              <option value="hard">{t.difficulties.hard}</option>
+            </select>
+          </div>
+          
+          <div className="flex justify-center gap-4 flex-wrap">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+              ref={fileInputRef}
+            />
+            <button
+              onClick={handleGenerateRandom}
+              disabled={isLoading}
+              className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-8 rounded-lg
+                       transition duration-200 ease-in-out transform hover:scale-105
+                       disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? t.generating : t.generateButton}
+            </button>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-lg
+                       transition duration-200 ease-in-out transform hover:scale-105"
+            >
+              {t.uploadButton}
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={isLoading}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg
+                       transition duration-200 ease-in-out transform hover:scale-105
+                       disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? t.processing : t.solveButton}
+            </button>
+          </div>
         </div>
         
         <div className="bg-white rounded-lg shadow-xl p-6 mb-8">
