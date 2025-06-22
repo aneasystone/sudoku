@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 export default function Home() {
   const [grid, setGrid] = useState<number[][]>(
     Array(9).fill(null).map(() => Array(9).fill(0))
   );
   const [solved, setSolved] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleCellChange = (row: number, col: number, value: string) => {
     const newValue = value === '' ? 0 : parseInt(value);
@@ -19,6 +21,7 @@ export default function Home() {
 
   const handleSubmit = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch('/api/solve', {
         method: 'POST',
         headers: {
@@ -34,6 +37,34 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Error solving sudoku:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsLoading(true);
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch('/api/parse-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.grid) {
+        setGrid(data.grid);
+        setSolved(false);
+      }
+    } catch (error) {
+      console.error('Error parsing image:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -43,6 +74,32 @@ export default function Home() {
         <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">
           Sudoku Solver
         </h1>
+        
+        <div className="flex justify-center gap-4 mb-8">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="hidden"
+            ref={fileInputRef}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-lg
+                     transition duration-200 ease-in-out transform hover:scale-105"
+          >
+            上传数独图片
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg
+                     transition duration-200 ease-in-out transform hover:scale-105
+                     disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? '处理中...' : '解决数独'}
+          </button>
+        </div>
         
         <div className="bg-white rounded-lg shadow-xl p-6 mb-8">
           <div className="grid grid-cols-9 gap-1">
@@ -66,16 +123,6 @@ export default function Home() {
               ))
             ))}
           </div>
-        </div>
-
-        <div className="flex justify-center">
-          <button
-            onClick={handleSubmit}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg
-                     transition duration-200 ease-in-out transform hover:scale-105"
-          >
-            解决数独
-          </button>
         </div>
       </div>
     </main>
