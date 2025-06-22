@@ -56,7 +56,8 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-  } catch (error) {
+  } catch (err) {
+    console.error('Error solving sudoku:', err);
     return NextResponse.json(
       { error: '处理请求时出错' },
       { status: 500 }

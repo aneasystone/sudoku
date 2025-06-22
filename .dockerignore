@@ -1,0 +1,41 @@
+# 依赖
+node_modules
+.pnpm-store
+
+# 测试
+coverage
+.nyc_output
+
+# 构建输出
+.next
+out
+
+# 环境变量
+.env
+.env.*
+!.env.example
+
+# 调试
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# 本地文件
+.DS_Store
+*.pem
+
+# 版本控制
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# 其他
+README.md
+LICENSE
+*.md 
