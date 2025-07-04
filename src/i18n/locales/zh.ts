@@ -1,5 +1,8 @@
-export default {
+const zh = {
+
   title: '数独解题器',
+  subtitle: '在线数独游戏生成器和求解器',
+  description: '免费在线数独游戏求解器和生成器。创建不同难度的数独谜题，解决现有谜题，或上传图片识别。适合初学者和专家。',
   uploadButton: '上传数独图片',
   solveButton: '解决数独',
   generateButton: '随机生成',
@@ -19,4 +22,6 @@ export default {
     generateError: '生成数独时出错',
     invalidDifficulty: '无效的难度级别'
   }
-}; 
+};
+
+export default zh; 
